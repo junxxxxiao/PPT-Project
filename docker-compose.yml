@@ -1,0 +1,15 @@
+services:
+  ai-ppt-maker:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      PPT_APP_DATA_DIR: /data/ppt-app
+    volumes:
+      - ppt_app_data:/data/ppt-app
+    restart: unless-stopped
+
+volumes:
+  ppt_app_data:
