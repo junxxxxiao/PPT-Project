@@ -2,6 +2,14 @@ export type TaskStatus = "pending" | "processing" | "completed" | "failed";
 
 export type TemplateId = "boardroom" | "fresh" | "focus" | "launch" | "classic";
 
+export type SlideLayout = "cover" | "agenda" | "bullets" | "two_column" | "metrics" | "process" | "conclusion";
+
+export type DeckVisualIntent = {
+  tone?: string;
+  density?: "low" | "medium" | "high";
+  accentStrategy?: string;
+};
+
 export type UploadedAsset = {
   id: string;
   originalName: string;
@@ -15,12 +23,15 @@ export type SlideElement =
   | {
       id: string;
       kind: "text";
-      role: "title" | "body" | "caption" | "note";
+      role: "title" | "subtitle" | "body" | "caption" | "note" | "metric" | "label" | "section";
       text: string;
       x: number;
       y: number;
       w: number;
       h: number;
+      color?: string;
+      bold?: boolean;
+      align?: "left" | "center" | "right";
     }
   | {
       id: string;
@@ -30,13 +41,27 @@ export type SlideElement =
       y: number;
       w: number;
       h: number;
+    }
+  | {
+      id: string;
+      kind: "shape";
+      shape: "rect" | "line" | "pill";
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+      fill?: string;
+      line?: string;
+      opacity?: number;
     };
 
 export type SlidePlan = {
   id: string;
   index: number;
+  layout: SlideLayout;
   title: string;
   bullets: string[];
+  visualIntent?: string;
   speakerNote?: string;
   imageAssetIds: string[];
   elements: SlideElement[];
@@ -47,6 +72,7 @@ export type DeckPlan = {
   subtitle: string;
   templateId: TemplateId;
   stylePrompt?: string;
+  visualIntent?: DeckVisualIntent;
   slides: SlidePlan[];
 };
 

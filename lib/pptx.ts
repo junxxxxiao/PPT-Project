@@ -49,7 +49,8 @@ export async function writePptx(task: DeckTask) {
 
     for (const element of slidePlan.elements) {
       if (element.kind === "text") {
-        const isTitle = element.role === "title";
+        const isTitle = element.role === "title" || element.role === "section";
+        const isMetric = element.role === "metric";
         const isNote = element.role === "note";
         slide.addText(element.text, {
           x: pctX(element.x),
@@ -57,16 +58,17 @@ export async function writePptx(task: DeckTask) {
           w: pctX(element.w),
           h: pctY(element.h),
           fontFace: template.fontFace,
-          fontSize: isTitle ? 27 : isNote ? 9 : 15,
+          fontSize: isTitle ? 27 : isMetric ? 24 : isNote ? 9 : 15,
           bold: isTitle,
           breakLine: false,
           fit: "shrink",
           valign: "top",
-          color: color(isNote ? template.secondary : template.foreground),
+          color: color(element.color || (isNote ? template.secondary : template.foreground)),
           margin: 0.02,
-          paraSpaceAfter: isTitle ? 0 : 8
+          paraSpaceAfter: isTitle ? 0 : 8,
+          align: element.align
         });
-      } else {
+      } else if (element.kind === "image") {
         const asset = assetMap.get(element.assetId);
         if (asset) {
           try {
@@ -92,6 +94,16 @@ export async function writePptx(task: DeckTask) {
             });
           }
         }
+      } else if (element.kind === "shape") {
+        const shapeType = element.shape === "pill" ? pptx.ShapeType.roundRect : element.shape === "line" ? pptx.ShapeType.line : pptx.ShapeType.rect;
+        slide.addShape(shapeType, {
+          x: pctX(element.x),
+          y: pctY(element.y),
+          w: pctX(element.w),
+          h: pctY(element.h),
+          fill: element.shape === "line" ? { color: color(element.line || template.accent) } : element.fill ? { color: color(element.fill), transparency: element.opacity ?? 0 } : { color: "FFFFFF", transparency: 100 },
+          line: element.shape === "line" ? { color: color(element.line || template.accent), transparency: 0 } : { color: color(element.line || element.fill || template.accent), transparency: 80 }
+        });
       }
     }
   }

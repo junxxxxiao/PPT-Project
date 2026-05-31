@@ -608,12 +608,33 @@ function SlideElementView({
     );
   }
 
+  if (element.kind === "shape") {
+    const isLine = element.shape === "line";
+    return (
+      <div
+        className={`absolute ${element.shape === "pill" ? "rounded-full" : "rounded-md"}`}
+        style={{
+          ...style,
+          background: isLine ? element.line || template.accent : element.fill || "transparent",
+          border: element.line && !isLine ? `1px solid ${element.line}` : undefined,
+          opacity: element.opacity !== undefined ? Math.max(0, Math.min(100, 100 - element.opacity)) / 100 : undefined
+        }}
+      />
+    );
+  }
+
   const isTitle = element.role === "title";
+  const isMetric = element.role === "metric";
   const isNote = element.role === "note";
   return (
     <div
-      className={`absolute whitespace-pre-line leading-snug ${isTitle ? "text-[clamp(18px,2.4vw,34px)] font-bold" : isNote ? "text-xs" : "text-[clamp(13px,1.4vw,18px)]"}`}
-      style={{ ...style, color: isNote ? template.secondary : template.foreground }}
+      className={`absolute whitespace-pre-line leading-snug ${isTitle ? "text-[clamp(18px,2.4vw,34px)] font-bold" : isMetric ? "text-[clamp(24px,3vw,42px)] font-bold" : isNote ? "text-xs" : "text-[clamp(13px,1.4vw,18px)]"}`}
+      style={{
+        ...style,
+        color: element.color || (isNote ? template.secondary : template.foreground),
+        fontWeight: element.bold ? 700 : undefined,
+        textAlign: element.align
+      }}
     >
       {element.text}
     </div>

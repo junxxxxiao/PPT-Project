@@ -12,7 +12,7 @@
 - HTML 在线预览和 `pptxgenjs` 导出 PPTX。
 - 预览页支持拖拽框选页面区域，并把区域坐标随修改需求提交。
 - 用 `task_id + token` 保护预览、修改、下载。
-- 默认本地规则生成，无需 AI key；配置 AI 环境变量后可走 OpenAI-compatible API。
+- 默认可本地试用；配置 `AI_API_KEY` 后会优先使用 OpenAI-compatible 模型生成 PPT 内容，模型调用失败会直接提示错误。
 
 ## 本地开发
 
@@ -26,7 +26,7 @@ npm run dev
 
 ## 可选 AI 配置
 
-默认会用内置规划器，适合快速试用。需要接入外部大模型时，在 `.env` 中设置：
+默认会用内置规划器，适合快速试用。需要接入外部大模型时，在 `.env` 中至少设置 `AI_API_KEY`；`AI_API_ENDPOINT` 不填时默认使用 OpenAI chat completions endpoint：
 
 ```bash
 AI_PROVIDER=openai-compatible
