@@ -49,7 +49,8 @@ export async function updateTask(task: DeckTask, patch: Partial<DeckTask>) {
 }
 
 export function publicTask(task: DeckTask): PublicTask {
-  const { token: _token, ...rest } = task;
+  const { token, ...rest } = task;
+  void token;
   return {
     ...rest,
     canDownload: Boolean(task.output?.pptxPath)

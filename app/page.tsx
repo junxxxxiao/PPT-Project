@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent, ReactNode } from "react";
 import {
   Download,
@@ -49,6 +49,21 @@ export default function Home() {
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(1);
   const [region, setRegion] = useState<Region | null>(null);
 
+  const loadTask = useCallback(
+    async (id = taskId, accessToken = token) => {
+      if (!id || !accessToken) return;
+      const response = await fetch(`/api/tasks/${id}?token=${encodeURIComponent(accessToken)}`);
+      const payload = await response.json();
+      if (!response.ok) {
+        setError(payload.error || "读取任务失败。");
+        return;
+      }
+      setTask(payload);
+      setError("");
+    },
+    [taskId, token]
+  );
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const currentTask = params.get("task");
@@ -58,16 +73,18 @@ export default function Home() {
       setToken(currentToken);
       void loadTask(currentTask, currentToken);
     }
-  }, []);
+  }, [loadTask]);
+
+  const deckSlides = task?.deck?.slides;
 
   useEffect(() => {
-    if (task?.deck?.slides?.[0]) {
+    if (deckSlides?.[0]) {
       setSelectedSlideIndex((current) => {
-        const found = task.deck?.slides.some((slide) => slide.index === current);
-        return found ? current : task.deck!.slides[0].index;
+        const found = deckSlides.some((slide) => slide.index === current);
+        return found ? current : deckSlides[0].index;
       });
     }
-  }, [task?.deck?.slides]);
+  }, [deckSlides]);
 
   const selectedTemplate = useMemo(
     () => getTemplate((task?.deck?.templateId || templateId) as TemplateId),
@@ -78,18 +95,6 @@ export default function Home() {
     () => task?.deck?.slides.find((slide) => slide.index === selectedSlideIndex) || task?.deck?.slides?.[0] || null,
     [selectedSlideIndex, task?.deck?.slides]
   );
-
-  async function loadTask(id = taskId, accessToken = token) {
-    if (!id || !accessToken) return;
-    const response = await fetch(`/api/tasks/${id}?token=${encodeURIComponent(accessToken)}`);
-    const payload = await response.json();
-    if (!response.ok) {
-      setError(payload.error || "读取任务失败。");
-      return;
-    }
-    setTask(payload);
-    setError("");
-  }
 
   async function submit() {
     setError("");
@@ -593,6 +598,7 @@ function SlideElementView({
 
   if (element.kind === "image") {
     return (
+      // eslint-disable-next-line @next/next/no-img-element -- Task assets are tokenized API responses and should not be cached by Next Image.
       <img
         alt=""
         className="absolute rounded-md object-cover"
